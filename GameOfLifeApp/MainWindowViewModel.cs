@@ -25,9 +25,6 @@ namespace GameOfLifeApp {
             } 
         }
 
-        private string pattern;
-        public string Pattern { get { return pattern; } set { pattern = value; OnPropertyChanged(); } }
-
         private int height = 10;
         public int Height { get { return height; } set { if (!timer.IsEnabled) { height = value; OnPropertyChanged(); } } }
         private int width = 10;
@@ -39,8 +36,6 @@ namespace GameOfLifeApp {
         public RelayCommand StepCmd { get; private set; }
         public RelayCommand ResetCmd { get; private set; }
         public RelayCommand ChangeCmd { get; private set; }
-        public RelayCommand ClearCmd { get; private set; }
-        public RelayCommand ExampleCmd { get; private set; }
 
         public MainWindowViewModel() {
             timer = new();
@@ -48,19 +43,9 @@ namespace GameOfLifeApp {
             timer.Tick += Step;
 
             StartCmd = new RelayCommand(_ => Start());
-            StepCmd = new RelayCommand(o => Step(o, EventArgs.Empty), o => !timer.IsEnabled);
+            StepCmd = new RelayCommand(_ => Step(null, EventArgs.Empty), _ => !timer.IsEnabled);
             ResetCmd = new RelayCommand(_ => Reset());
             ChangeCmd = new RelayCommand(cell => Change(cell as Cell)); //Disabled button style can't be changed from XAML?
-            ClearCmd = new RelayCommand(_ => Pattern = String.Empty);
-            ExampleCmd = new RelayCommand(_ => Pattern = new StringBuilder()
-                .AppendLine(".........O")
-                .AppendLine(".......O.O")
-                .AppendLine("......O.O")
-                .AppendLine("OO...O..O...........OO")
-                .AppendLine("OO....O.O...........OO")
-                .AppendLine(".......O.O")
-                .AppendLine(".........O")
-                .ToString());
 
             Reset();
         }
@@ -98,11 +83,7 @@ namespace GameOfLifeApp {
             if (timer.IsEnabled)
                 Start();
 
-            if (String.IsNullOrWhiteSpace(Pattern)) {
-                game = new Game(Height, Width);
-            } else {
-                game = new Game(Pattern);
-            }
+            game = new Game(Height, Width);
 
             Cells.Clear();
             for (int y = 0; y < game.Grid.Length; y++) {

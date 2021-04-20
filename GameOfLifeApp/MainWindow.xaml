@@ -17,7 +17,7 @@
         <StackPanel DockPanel.Dock="Left">
             <Button Content="Start / Stop" Command="{Binding StartCmd}"/>
             <Button Content="Next Step" Command="{Binding StepCmd}"/>
-            <Button Content="Reset Pattern" Command="{Binding ResetCmd}"/>
+            <Button Content="Reset" Command="{Binding ResetCmd}"/>
             <UniformGrid Columns="2">
                 <Label Content="Height:"/>
                 <TextBox VerticalContentAlignment="Center">
@@ -52,10 +52,6 @@
                 <Label Content="Steps:"/>
                 <Label Content="{Binding Ticks}"/>
             </UniformGrid>
-            <Label Content="Pattern:"/>
-            <TextBox Text="{Binding Pattern}" MaxLines="5" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible"/>
-            <Button Content="Clear Pattern" Command="{Binding ClearCmd}"/>
-            <Button Content="Example Pattern" Command="{Binding ExampleCmd}"/>
         </StackPanel>
         <ItemsControl ItemsSource="{Binding Cells}">
             <ItemsControl.ItemsPanel>

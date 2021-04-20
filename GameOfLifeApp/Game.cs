@@ -18,10 +18,6 @@ namespace GameOfLifeApp {
             CreateEmptyGrid();
         }
 
-        public Game(string text) {
-            LoadPattern(text);
-        }
-
         public void ChangeCell(int x, int y) {
             Grid[y][x] = !Grid[y][x];
         }
@@ -64,35 +60,6 @@ namespace GameOfLifeApp {
             }
 
             Grid = newState;
-        }
-
-        /// <summary>
-        /// Read Patterns from conwaylife.com/patterns/*.cell
-        /// </summary>
-        public void LoadPattern(string text) {
-            if (String.IsNullOrWhiteSpace(text)) {
-                CreateEmptyGrid();
-                return;
-            }
-            string[] lines = text.Split('\n').Select(line => Regex.IsMatch(line, "^[.O\\s]+$")?line.Trim():String.Empty).ToArray();
-
-            if (lines.Max(line => line.Length) == 0) {
-                CreateEmptyGrid();
-                return;
-            }
-
-            int height = lines.Length;
-            int width = lines.Max(line => line.Trim().Length);
-
-            Grid = new bool[height][];
-            for(int y = 0; y < height; y++) {
-                Grid[y] = new bool[width];
-                for(int x = 0; x < width; x++) {
-                    if (x < lines[y].Trim().Length) {
-                        Grid[y][x] = lines[y].Trim()[x] == 'O';
-                    }
-                }
-            }
         }
 
         private void CreateEmptyGrid(int height, int width) {
