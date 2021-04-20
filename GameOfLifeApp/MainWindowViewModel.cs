@@ -26,9 +26,9 @@ namespace GameOfLifeApp {
         }
 
         private int height = 10;
-        public int Height { get { return height; } set { if (!timer.IsEnabled) { height = value; OnPropertyChanged(); } } }
+        public int Height { get { return height; } set { if (!timer.IsEnabled) { height = value; OnPropertyChanged(); ChangeDimensions(Height, Width); } } }
         private int width = 10;
-        public int Width { get { return width; } set { if (!timer.IsEnabled) { width = value; OnPropertyChanged(); } } }
+        public int Width { get { return width; } set { if (!timer.IsEnabled) { width = value; OnPropertyChanged(); ChangeDimensions(Height, Width); } } }
         private int ticks = 0;
         public int Ticks { get { return ticks; } set { ticks = value; OnPropertyChanged(); } }
 
@@ -85,12 +85,7 @@ namespace GameOfLifeApp {
 
             game = new Game(Height, Width);
 
-            Cells.Clear();
-            for (int y = 0; y < game.Grid.Length; y++) {
-                for (int x = 0; x < game.Grid[y].Length; x++) {
-                    Cells.Add(new Cell(x, y, game.Grid[y][x]));
-                }
-            }
+            Rebuild();
 
             Height = game.Grid.Length;
             Width = game.Grid.Max(row => row.Length);
@@ -98,6 +93,20 @@ namespace GameOfLifeApp {
             Ticks = 0;
 
             //Debug.WriteLine("reset");
+        }
+
+        private void ChangeDimensions(int height, int width) {
+            game.ChangeGrid(height, width);
+            Rebuild();
+        }
+
+        private void Rebuild() {
+            Cells.Clear();
+            for (int y = 0; y < game.Grid.Length; y++) {
+                for (int x = 0; x < game.Grid[y].Length; x++) {
+                    Cells.Add(new Cell(x, y, game.Grid[y][x]));
+                }
+            }
         }
 
         private void Change(Cell cell) {

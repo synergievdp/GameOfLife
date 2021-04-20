@@ -62,7 +62,7 @@ namespace GameOfLifeApp {
             Grid = newState;
         }
 
-        private void CreateEmptyGrid(int height, int width) {
+        private void CreateEmptyGrid(int height = 10, int width = 10) {
             height = height <= 0 ? 10 : height;
             width = width <= 0 ? 10 : width;
 
@@ -72,8 +72,21 @@ namespace GameOfLifeApp {
             }
         }
 
-        private void CreateEmptyGrid() {
-            CreateEmptyGrid(10, 10);
+        public void ChangeGrid(int height, int width) {
+            bool[][] newGrid = new bool[height][];
+
+            for(int y = 0; y < height; y++) {
+                newGrid[y] = new bool[width];
+                if(y < Grid.Length) {
+                    for(int x = 0; x < width; x++) {
+                        if(x < Grid[y].Length) {
+                            newGrid[y][x] = Grid[y][x];
+                        }
+                    }
+                }
+            }
+
+            Grid = newGrid;
         }
     }
 }
