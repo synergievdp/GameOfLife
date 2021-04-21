@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,7 +18,8 @@ namespace GameOfLifeApp {
         private DispatcherTimer timer;
         private Game game;
 
-        public ObservableCollection<Cell> Cells { get; private set; } = new();
+        public ObservableCollection<Cell> Cells { get; } = new();
+        public ObservableCollection<bool[][]> Patterns { get; } = new();
         private int interval = 168;
         public int Interval { 
             get { return interval; } 
@@ -31,23 +35,64 @@ namespace GameOfLifeApp {
         public int Width { get { return width; } set { if (!timer.IsEnabled) { width = value; OnPropertyChanged(); ChangeDimensions(Height, Width); } } }
         private int ticks = 0;
         public int Ticks { get { return ticks; } set { ticks = value; OnPropertyChanged(); } }
+        public int Changed { get; set; }
 
-        public RelayCommand StartCmd { get; private set; }
-        public RelayCommand StepCmd { get; private set; }
-        public RelayCommand ResetCmd { get; private set; }
-        public RelayCommand ChangeCmd { get; private set; }
+        public RelayCommand StartCmd { get; }
+        public RelayCommand StepCmd { get; }
+        public RelayCommand ResetCmd { get; }
+        public RelayCommand ChangeCmd { get; }
+        public RelayCommand SaveCmd { get; }
+        public RelayCommand LoadCmd { get; }
+        public RelayCommand DeleteCmd { get; }
 
         public MainWindowViewModel() {
             timer = new();
             timer.Interval = new TimeSpan(0, 0, 0, 0, Interval);
             timer.Tick += Step;
 
-            StartCmd = new RelayCommand(_ => Start());
-            StepCmd = new RelayCommand(_ => Step(null, EventArgs.Empty), _ => !timer.IsEnabled);
-            ResetCmd = new RelayCommand(_ => Reset());
-            ChangeCmd = new RelayCommand(cell => Change(cell as Cell)); //Disabled button style can't be changed from XAML?
+            StartCmd = new(_ => Start());
+            StepCmd = new(_ => Step(null, EventArgs.Empty), _ => !timer.IsEnabled);
+            ResetCmd = new(_ => Reset());
+            ChangeCmd = new(cell => Change(cell as Cell)); //Disabled button style can't be changed from XAML?
+            SaveCmd = new(_ => SavePattern());
+            LoadCmd = new(index => LoadPattern((int)index));
+            DeleteCmd = new(index => DeletePattern((int)index));
 
             Reset();
+            LoadFile();
+        }
+
+        private void SavePattern() {
+            Patterns.Add(game.Grid);
+            File.WriteAllText("patterns.json", JsonConvert.SerializeObject(Patterns, Formatting.Indented));
+
+            LoadFile();
+        }
+
+        private void LoadFile() {
+            Patterns.Clear();
+
+            if (File.Exists("patterns.json")) {
+                string file = File.ReadAllText("patterns.json");
+                var patterns = JsonConvert.DeserializeObject<List<bool[][]>>(file);
+                if (patterns != null)
+                    foreach (var pattern in patterns) {
+                        Patterns.Add(pattern);
+                    }
+            }
+        }
+
+        private void LoadPattern(int index) {
+            if (index > -1) {
+                game.Grid = Patterns[index];
+                Rebuild();
+            }
+        }
+
+        private void DeletePattern(int index) {
+            if(index > -1) {
+                Patterns.RemoveAt(index);
+            }
         }
 
         private void Start() {
@@ -91,6 +136,7 @@ namespace GameOfLifeApp {
             Width = game.Grid.Max(row => row.Length);
 
             Ticks = 0;
+            Changed = 0;
 
             //Debug.WriteLine("reset");
         }
@@ -117,6 +163,8 @@ namespace GameOfLifeApp {
 
             int index = cell.X + cell.Y * game.Grid[cell.Y].Length;
             Cells[index].Alive = game.Grid[cell.Y][cell.X];
+
+            Changed++;
 
             //Debug.WriteLine($"Cell ({cell.X}, {cell.Y}) changed");
         }

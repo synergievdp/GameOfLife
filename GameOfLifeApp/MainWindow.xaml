@@ -52,6 +52,16 @@
                 <Label Content="Steps:"/>
                 <Label Content="{Binding Ticks}"/>
             </UniformGrid>
+            <Button Content="Save Board" Command="{Binding SaveCmd}"/>
+            <Button Content="Load Board" Command="{Binding LoadCmd}" CommandParameter="{Binding ElementName=patternList, Path=SelectedIndex}"/>
+            <ListView x:Name="patternList" ItemsSource="{Binding Patterns}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Content="Pattern"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Button Content="Delete Board" Command="{Binding DeleteCmd}" CommandParameter="{Binding ElementName=patternList, Path=SelectedIndex}"/>
         </StackPanel>
         <ItemsControl ItemsSource="{Binding Cells}">
             <ItemsControl.ItemsPanel>
