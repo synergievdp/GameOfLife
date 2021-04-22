@@ -19,27 +19,51 @@ namespace GameOfLifeApp {
         private Game game;
 
         public ObservableCollection<Cell> Cells { get; } = new();
-        public ObservableCollection<bool[][]> Patterns { get; } = new();
+        public ObservableCollection<Pattern> Patterns { get; } = new();
         private int interval = 168;
-        public int Interval { 
-            get { return interval; } 
+        public int Interval {
+            get { return interval; }
             set {
                 interval = value;
-                timer.Interval = timer.Interval.TotalMilliseconds != interval ? new TimeSpan(0, 0, 0, 0, Interval) : timer.Interval; 
-            } 
+                timer.Interval = timer.Interval.TotalMilliseconds != interval ? new TimeSpan(0, 0, 0, 0, Interval) : timer.Interval;
+            }
         }
 
         private int height = 10;
-        public int Height { get { return height; } set { if (!timer.IsEnabled) { height = value; OnPropertyChanged(); ChangeDimensions(Height, Width); } } }
+        public int Height {
+            get { return height; }
+            set {
+                if (!timer.IsEnabled) {
+                    height = value;
+                    OnPropertyChanged();
+                    ChangeDimensions(Height, Width);
+                }
+            }
+        }
         private int width = 10;
-        public int Width { get { return width; } set { if (!timer.IsEnabled) { width = value; OnPropertyChanged(); ChangeDimensions(Height, Width); } } }
+        public int Width {
+            get { return width; }
+            set {
+                if (!timer.IsEnabled) {
+                    width = value;
+                    OnPropertyChanged();
+                    ChangeDimensions(Height, Width);
+                }
+            }
+        }
         private int ticks = 0;
-        public int Ticks { get { return ticks; } set { ticks = value; OnPropertyChanged(); } }
+        public int Ticks {
+            get { return ticks; }
+            set {
+                ticks = value;
+                OnPropertyChanged();
+            }
+        }
         public int Changed { get; set; }
 
         public RelayCommand StartCmd { get; }
         public RelayCommand StepCmd { get; }
-        public RelayCommand ResetCmd { get; }
+        public RelayCommand ClearCmd { get; }
         public RelayCommand ChangeCmd { get; }
         public RelayCommand SaveCmd { get; }
         public RelayCommand LoadCmd { get; }
@@ -50,23 +74,25 @@ namespace GameOfLifeApp {
             timer.Interval = new TimeSpan(0, 0, 0, 0, Interval);
             timer.Tick += Step;
 
-            StartCmd = new(_ => Start());
+            StartCmd = new(_ => Start(), _ => !timer.IsEnabled);
             StepCmd = new(_ => Step(null, EventArgs.Empty), _ => !timer.IsEnabled);
-            ResetCmd = new(_ => Reset());
+            ClearCmd = new(_ => Clear());
             ChangeCmd = new(cell => Change(cell as Cell)); //Disabled button style can't be changed from XAML?
             SaveCmd = new(_ => SavePattern());
             LoadCmd = new(index => LoadPattern((int)index));
             DeleteCmd = new(index => DeletePattern((int)index));
 
-            Reset();
+            Clear();
             LoadFile();
         }
 
         private void SavePattern() {
-            Patterns.Add(game.Grid);
-            File.WriteAllText("patterns.json", JsonConvert.SerializeObject(Patterns, Formatting.Indented));
+            Patterns.Add(new Pattern(game.Grid));
+            SaveFile();
+        }
 
-            LoadFile();
+        private void SaveFile() {
+            File.WriteAllText("patterns.json", JsonConvert.SerializeObject(Patterns, Formatting.Indented));
         }
 
         private void LoadFile() {
@@ -74,7 +100,7 @@ namespace GameOfLifeApp {
 
             if (File.Exists("patterns.json")) {
                 string file = File.ReadAllText("patterns.json");
-                var patterns = JsonConvert.DeserializeObject<List<bool[][]>>(file);
+                var patterns = JsonConvert.DeserializeObject<List<Pattern>>(file);
                 if (patterns != null)
                     foreach (var pattern in patterns) {
                         Patterns.Add(pattern);
@@ -84,21 +110,24 @@ namespace GameOfLifeApp {
 
         private void LoadPattern(int index) {
             if (index > -1) {
-                game.Grid = Patterns[index];
+                game.FillGrid(Patterns[index].Board);
                 Rebuild();
             }
         }
 
         private void DeletePattern(int index) {
-            if(index > -1) {
+            if (index > -1) {
                 Patterns.RemoveAt(index);
             }
+
+            SaveFile();
         }
 
         private void Start() {
             if (timer.IsEnabled)
                 timer.Stop();
-            else timer.Start();
+            else
+                timer.Start();
 
             StepCmd.RaiseCanExecuteChanged();
             ChangeCmd.RaiseCanExecuteChanged();
@@ -108,8 +137,8 @@ namespace GameOfLifeApp {
 
         private void Step(object sender, EventArgs e) {
             List<(int, int)> changes = game.ChangeState().ToList();
-            
-            if(timer.IsEnabled && changes.Count == 0)
+
+            if (timer.IsEnabled && (game.HasState(game.Grid) || changes.Count == 0))
                 Start();
 
             foreach ((int y, int x) in changes) {
@@ -124,7 +153,7 @@ namespace GameOfLifeApp {
             //Debug.WriteLine("step");
         }
 
-        private void Reset() {
+        private void Clear() {
             if (timer.IsEnabled)
                 Start();
 
@@ -142,7 +171,7 @@ namespace GameOfLifeApp {
         }
 
         private void ChangeDimensions(int height, int width) {
-            game.ChangeGrid(height, width);
+            game.ResizeGrid(height, width);
             Rebuild();
         }
 

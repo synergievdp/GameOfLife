@@ -10,18 +10,39 @@ using System.Threading.Tasks;
 
 namespace GameOfLifeApp {
     class Game {
-        public bool[][] Grid { get; set; }
+        public bool[][] Grid { get; private set; }
+        public List<bool[][]> States { get; private set; }
 
         public Game(int height, int width) {
-            CreateEmptyGrid(height, width);
-        }
+            CreateGrid(height, width);
 
-        public Game() {
-            CreateEmptyGrid();
+            States.Add(Grid);
         }
 
         public void ChangeCell(int x, int y) {
             Grid[y][x] = !Grid[y][x];
+        }
+
+        public bool HasState(bool[][] other) {
+            bool equal = true;
+            foreach(bool[][] state in States) {
+                equal = true;
+
+                for(int y = 0; y < Math.Min(state.Length, other.Length); y++) {
+                    for(int x = 0; x < Math.Min(state[y].Length, other[y].Length); x++) {
+                        if (state[y][x] != other[y][x]) {
+                            equal = false;
+                            break;
+                        }
+                    }
+                    if (!equal)
+                        break;
+                }
+
+                if (equal)
+                    break;
+            }
+            return equal;
         }
 
         public IEnumerable<(int, int)> ChangeState() {
@@ -61,10 +82,11 @@ namespace GameOfLifeApp {
                 }
             }
 
+            States.Add(newState);
             Grid = newState;
         }
 
-        private void CreateEmptyGrid(int height = 10, int width = 10) {
+        private void CreateGrid(int height = 10, int width = 10) {
             height = height <= 0 ? 10 : height;
             width = width <= 0 ? 10 : width;
 
@@ -72,9 +94,18 @@ namespace GameOfLifeApp {
             for (int y = 0; y < height; y++) {
                 Grid[y] = new bool[width];
             }
+
+            States = new();
         }
 
-        public void ChangeGrid(int height, int width) {
+        public void FillGrid(bool[][] grid) {
+            CreateGrid(grid.Length, grid.Max(row => row.Length));
+            Grid = grid;
+
+            States.Add(Grid);
+        }
+
+        public void ResizeGrid(int height, int width) {
             bool[][] newGrid = new bool[height][];
 
             for(int y = 0; y < height; y++) {

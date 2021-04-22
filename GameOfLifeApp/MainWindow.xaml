@@ -17,7 +17,7 @@
         <StackPanel DockPanel.Dock="Left">
             <Button Content="Start / Stop" Command="{Binding StartCmd}"/>
             <Button Content="Next Step" Command="{Binding StepCmd}"/>
-            <Button Content="Reset" Command="{Binding ResetCmd}"/>
+            <Button Content="Clear Board" Command="{Binding ClearCmd}"/>
             <UniformGrid Columns="2">
                 <Label Content="Height:"/>
                 <TextBox VerticalContentAlignment="Center">
