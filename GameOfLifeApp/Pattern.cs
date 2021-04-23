@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace GameOfLifeApp {
     class Pattern {
         public bool[][] Board { get; private set; }
-        public List<Highscore> Highscores { get; private set; } = new();
+        public List<(string, int)> Highscores { get; private set; } = new();
 
         public Pattern(bool[][] board) {
             Board = board;

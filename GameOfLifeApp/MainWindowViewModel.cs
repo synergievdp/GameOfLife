@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -60,27 +59,7 @@ namespace GameOfLifeApp {
                 OnPropertyChanged();
             }
         }
-        private bool isPlaying;
-        public bool IsPlaying { 
-            get { return isPlaying; }
-            set { 
-                isPlaying = value;
-                Ticks = 0;
-                Changed = 0; 
-                Visibility = isPlaying ? Visibility.Collapsed : Visibility.Visible;
-            }
-        }
-        private Visibility visibility = Visibility.Visible;
-        public Visibility Visibility { 
-            get { return visibility; }
-            set { visibility = value; OnPropertyChanged(); }
-        }
-        private int changed;
-        public int Changed {
-            get { return changed; }
-            set { changed = value; OnPropertyChanged(); }
-        }
-        private int currentBoardIndex = -1;
+        public int Changed { get; set; }
 
         public RelayCommand StartCmd { get; }
         public RelayCommand StepCmd { get; }
@@ -133,7 +112,6 @@ namespace GameOfLifeApp {
             if (index > -1) {
                 game.FillGrid(Patterns[index].Board);
                 Rebuild();
-                currentBoardIndex = index;
             }
         }
 
@@ -160,14 +138,8 @@ namespace GameOfLifeApp {
         private void Step(object sender, EventArgs e) {
             List<(int, int)> changes = game.ChangeState().ToList();
 
-            if (timer.IsEnabled && (game.HasState(game.Grid) || changes.Count == 0)) {
+            if (timer.IsEnabled && (game.HasState(game.Grid) || changes.Count == 0))
                 Start();
-                if (IsPlaying && currentBoardIndex > 0) {
-                    StartCmd.RaiseCanExecuteChanged();
-                    Patterns[currentBoardIndex].Highscores.Add(new Highscore(DateTime.Now.ToShortDateString(), Changed * Ticks));
-                    SaveFile();
-                }
-            }
 
             foreach ((int y, int x) in changes) {
                 int index = x + y * game.Grid[y].Length;
@@ -192,7 +164,8 @@ namespace GameOfLifeApp {
             Height = game.Grid.Length;
             Width = game.Grid.Max(row => row.Length);
 
-            currentBoardIndex = -1;
+            Ticks = 0;
+            Changed = 0;
 
             //Debug.WriteLine("reset");
         }
@@ -200,8 +173,6 @@ namespace GameOfLifeApp {
         private void ChangeDimensions(int height, int width) {
             game.ResizeGrid(height, width);
             Rebuild();
-
-            currentBoardIndex = -1;
         }
 
         private void Rebuild() {
@@ -211,13 +182,10 @@ namespace GameOfLifeApp {
                     Cells.Add(new Cell(x, y, game.Grid[y][x]));
                 }
             }
-
-            Ticks = 0;
-            Changed = 0;
         }
 
         private void Change(Cell cell) {
-            if (timer.IsEnabled || (IsPlaying && game.Grid[cell.Y][cell.X]))
+            if (timer.IsEnabled)
                 return;
 
             game.ChangeCell(cell.X, cell.Y);

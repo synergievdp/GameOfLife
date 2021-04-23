@@ -15,13 +15,12 @@
     </Window.Resources>
     <DockPanel>
         <StackPanel DockPanel.Dock="Left">
-            <ToggleButton Content="Toggle Play" IsChecked="{Binding IsPlaying}"/>
             <Button Content="Start / Stop" Command="{Binding StartCmd}"/>
-            <Button Content="Next Step" Command="{Binding StepCmd}" Visibility="{Binding Visibility}"/>
-            <Button Content="Clear Board" Command="{Binding ClearCmd}" Visibility="{Binding Visibility}"/>
+            <Button Content="Next Step" Command="{Binding StepCmd}"/>
+            <Button Content="Clear Board" Command="{Binding ClearCmd}"/>
             <UniformGrid Columns="2">
-                <Label Content="Height:" Visibility="{Binding Visibility}"/>
-                <TextBox VerticalContentAlignment="Center" Visibility="{Binding Visibility}">
+                <Label Content="Height:"/>
+                <TextBox VerticalContentAlignment="Center">
                     <TextBox.Text>
                         <Binding Path="Height">
                             <Binding.ValidationRules>
@@ -30,8 +29,8 @@
                         </Binding>
                     </TextBox.Text>
                 </TextBox>
-                <Label Content="Width:" Visibility="{Binding Visibility}"/>
-                <TextBox VerticalContentAlignment="Center" Visibility="{Binding Visibility}">
+                <Label Content="Width:"/>
+                <TextBox VerticalContentAlignment="Center">
                     <TextBox.Text>
                         <Binding Path="Width">
                             <Binding.ValidationRules>
@@ -52,10 +51,8 @@
                 </TextBox>
                 <Label Content="Steps:"/>
                 <Label Content="{Binding Ticks}"/>
-                <Label Content="Added:"/>
-                <Label Content="{Binding Changed}"/>
             </UniformGrid>
-            <Button Content="Save Board" Command="{Binding SaveCmd}" Visibility="{Binding Visibility}"/>
+            <Button Content="Save Board" Command="{Binding SaveCmd}"/>
             <Button Content="Load Board" Command="{Binding LoadCmd}" CommandParameter="{Binding ElementName=patternList, Path=SelectedIndex}"/>
             <ListView x:Name="patternList" ItemsSource="{Binding Patterns}">
                 <ListView.ItemTemplate>
@@ -64,17 +61,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Button Content="Delete Board" Command="{Binding DeleteCmd}" CommandParameter="{Binding ElementName=patternList, Path=SelectedIndex}" Visibility="{Binding Visibility}"/>
-            <ListView ItemsSource="{Binding ElementName=patternList, Path=SelectedItem.Highscores}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <Label Content="{Binding Name}"/>
-                            <Label Content="{Binding Score}"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <Button Content="Delete Board" Command="{Binding DeleteCmd}" CommandParameter="{Binding ElementName=patternList, Path=SelectedIndex}"/>
         </StackPanel>
         <ItemsControl ItemsSource="{Binding Cells}">
             <ItemsControl.ItemsPanel>
