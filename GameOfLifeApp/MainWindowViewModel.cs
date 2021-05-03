@@ -74,7 +74,7 @@ namespace GameOfLifeApp {
             timer.Interval = new TimeSpan(0, 0, 0, 0, Interval);
             timer.Tick += Step;
 
-            StartCmd = new(_ => Start(), _ => !timer.IsEnabled);
+            StartCmd = new(_ => Start());
             StepCmd = new(_ => Step(null, EventArgs.Empty), _ => !timer.IsEnabled);
             ClearCmd = new(_ => Clear());
             ChangeCmd = new(cell => Change(cell as Cell)); //Disabled button style can't be changed from XAML?
@@ -138,7 +138,9 @@ namespace GameOfLifeApp {
         private void Step(object sender, EventArgs e) {
             List<(int, int)> changes = game.ChangeState().ToList();
 
-            if (timer.IsEnabled && (game.HasState(game.Grid) || changes.Count == 0))
+            if (timer.IsEnabled && (
+                //game.HasState(game.Grid) || 
+                changes.Count == 0))
                 Start();
 
             foreach ((int y, int x) in changes) {
